@@ -1,0 +1,51 @@
+#!/bin/sh
+
+BASE="${0%/*}"
+
+err() {
+	echo "$@" >&2
+}
+
+textfile() {
+	local f= fn= type= charset=
+	for f; do
+		fn="${f##*/}"
+		case "$fn" in
+		*.c|*.h|*.S|*.txt|*.sh|Makefile*|Kconfig*)
+			echo "$f"
+			;;
+		*)
+			type=$(file -i "$f" | cut -d: -f2 | cut -c2-)
+			charset=
+			eval type=$type
+
+			case "$type" in
+				text/*) echo "$f" ;;
+				*)
+					case "$charset" in
+					binary) ;;
+					*)
+						err "W: $f (type=$type, charset=$charset)"
+						;;
+					esac
+				;;
+			esac
+		esac
+	done
+}
+
+whitespace() {
+	local f=
+	for f; do
+		while true; do
+			sed -e 's,[ \t]\+$,,' -e '${/^$/d;}' -- "$f" > "$f~"
+
+			if cmp -s "$f" "$f~"; then
+				rm "$f~"
+				break
+			fi
+
+			mv "$f~" "$f"
+		done
+	done
+}
