@@ -7,7 +7,7 @@ P="$BASE/x.$$.patch"
 for f; do
 	[ ! -L "$f" -a -f "$f" ] || continue
 
-	git st --porcelain -- "$f"
+	git status --porcelain -- "$f"
 	"$BASE/sanitize_file.sh" "$f"
 
 	if [ -n "$(textfile "$f")" ]; then
@@ -16,11 +16,11 @@ for f; do
 		[ -s "$P" ] || continue
 
 		git reset -q HEAD -- "$f"
-		st="$(git st --ignored --porcelain -- "$f" | cut -c1-2)"
+		st="$(git status --ignored --porcelain -- "$f" | cut -c1-2)"
 		if [ "$st" = "??" -o "$st" = "!!" ]; then
 			rm -- "$f"
 		else
-			git co -- "$f"
+			git checkout -- "$f"
 		fi
 		git apply --whitespace=fix < "$P"
 		rm -f "$P"
