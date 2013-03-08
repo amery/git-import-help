@@ -7,8 +7,7 @@ C="${0%/*}/current"
 REF=$(cd "${0%/*}/reconstruct-ref"; pwd -P)
 
 dirt() {
-	git ls -io --exclude-standard
-	git ls -m -o -d
+	git ls-files -imdo --exclude-standard
 }
 
 if [ -s "$C" -a "$(git status --porcelain | wc -l)" -gt 0 ]; then
@@ -16,11 +15,11 @@ if [ -s "$C" -a "$(git status --porcelain | wc -l)" -gt 0 ]; then
 	echo "current: $c"
 	if [ "$(dirt | wc -l)" -gt 0 ]; then
 		dirt | sort -u | while read f; do
-			git st --ignored --porcelain -- "$f"
+			git status --ignored --porcelain -- "$f"
 		done
 		exit
 	else
-		git ci -C "$c"
+		git commit -C "$c"
 	fi
 fi
 
@@ -61,8 +60,7 @@ git show --pretty="format:" --name-only "$c" | sed '/^$/d;'
 	fi
 done
 
-git ls -d | xargs -r git rm -q --
-git ls -m -o | xargs -r git add -f --
+git ls-files -zd | xargs -0r git rm -q --
+git ls-files -zmio --exclude-standard | xargs -0r git add -f --
 "${0%/*}/fix_whitespace_st.sh"
-#git st
 exec "${0%/*}/re_next.sh"
