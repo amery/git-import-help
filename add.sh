@@ -10,10 +10,10 @@ B="${0%/*}"
 
 set -e
 for d; do
-	(git ls -iz --exclude-standard "$d"; git ls -omz "$d") |
+	git ls-files -omiz --exclude-standard "$d" |
 		xargs -r0 git add -f --
-	git ls -dz "$d" |
+	git ls-files -dz "$d" |
 		xargs -r0 git rm
 done
 
-exec git st --porcelain "$@"
+exec git status --porcelain "$@"
